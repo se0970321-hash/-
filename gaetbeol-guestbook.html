@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>순천만 갯벌 체험 소감문</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
   :root {
     --sea-deep: #042C53;
@@ -279,12 +279,7 @@
 </head>
 <body>
 
-<!-- ★★★ 여기에 Supabase 정보를 입력하세요 ★★★ -->
-<script>
-  const SUPABASE_URL = 'URL: https://tvohafktxjgtysztgkmq.supabase.co';       // 예: https://abcdef.supabase.co
-  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // anon public key
-  const TABLE_NAME = 'gaetbeol_entries';
-</script>
+
 
 <header class="header">
   <div class="header-inner">
@@ -299,14 +294,7 @@
 
 <div class="container">
 
-  <!-- Supabase 미설정 안내 -->
-  <div class="setup-banner" id="setupBanner">
-    <strong>⚙️ Supabase 연결이 필요해요</strong>
-    1. <a href="https://supabase.com" target="_blank">supabase.com</a>에서 프로젝트 생성<br>
-    2. SQL 에디터에서 아래 쿼리 실행:<br>
-    <code>CREATE TABLE gaetbeol_entries (id bigserial PRIMARY KEY, name text, school text, feeling text, content text, created_at timestamptz DEFAULT now());</code><br>
-    3. 이 파일 상단 <code>SUPABASE_URL</code>과 <code>SUPABASE_ANON_KEY</code>를 채우세요.
-  </div>
+
 
   <!-- 소감문 작성 폼 -->
   <div class="form-card">
@@ -358,22 +346,16 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const { createClient } = supabase;
-let db = null;
 let selectedEmoji = '😄';
+const STORAGE_KEY = 'gaetbeol_entries';
 
-// ── Supabase 초기화 ──
-function initSupabase() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-    document.getElementById('setupBanner').classList.remove('hidden');
-    document.getElementById('entriesList').innerHTML =
-      '<div class="empty-msg"><span class="big">⚙️</span>Supabase 연결 후 소감문이 표시돼요</div>';
-    document.getElementById('countBadge').textContent = '0명';
-    return;
-  }
-  document.getElementById('setupBanner').classList.add('hidden');
-  db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  loadEntries();
+// ── 데이터 로드/저장 ──
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveEntries(entries) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
 // ── 이모지 선택 ──
@@ -386,9 +368,7 @@ document.getElementById('emojiGrid').addEventListener('click', e => {
 });
 
 // ── 소감문 등록 ──
-async function submitEntry() {
-  if (!db) { showToast('Supabase 연결을 먼저 설정해주세요', true); return; }
-
+function submitEntry() {
   const name = document.getElementById('nameInput').value.trim();
   const school = document.getElementById('schoolInput').value.trim();
   const content = document.getElementById('contentInput').value.trim();
@@ -396,56 +376,35 @@ async function submitEntry() {
   if (!name) { showToast('이름을 입력해주세요 😊', true); return; }
   if (!content || content.length < 10) { showToast('소감문을 10자 이상 써주세요 ✍️', true); return; }
 
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '등록 중…';
-
-  const { error } = await db.from(TABLE_NAME).insert({
+  const entries = getEntries();
+  entries.unshift({
+    id: Date.now(),
     name,
     school: school || '미입력',
     feeling: selectedEmoji,
-    content
+    content,
+    created_at: new Date().toISOString()
   });
+  saveEntries(entries);
 
-  if (error) {
-    showToast('저장 중 오류가 발생했어요 😢', true);
-    console.error(error);
-  } else {
-    showToast('소감문이 등록됐어요! 🎉');
-    document.getElementById('nameInput').value = '';
-    document.getElementById('schoolInput').value = '';
-    document.getElementById('contentInput').value = '';
-    loadEntries();
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '🌊 소감문 등록하기';
+  showToast('소감문이 등록됐어요! 🎉');
+  document.getElementById('nameInput').value = '';
+  document.getElementById('schoolInput').value = '';
+  document.getElementById('contentInput').value = '';
+  loadEntries();
 }
 
 // ── 목록 불러오기 ──
-async function loadEntries() {
-  if (!db) return;
-  const { data, error } = await db
-    .from(TABLE_NAME)
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(50);
+function loadEntries() {
+  const entries = getEntries();
+  document.getElementById('countBadge').textContent = `${entries.length}명 참여`;
 
-  if (error) {
-    document.getElementById('entriesList').innerHTML =
-      '<div class="empty-msg">불러오기 실패 😢</div>';
-    return;
-  }
-
-  document.getElementById('countBadge').textContent = `${data.length}명 참여`;
-
-  if (data.length === 0) {
+  if (entries.length === 0) {
     document.getElementById('entriesList').innerHTML =
       '<div class="empty-msg"><span class="big">🌊</span>아직 소감문이 없어요.<br>첫 번째로 남겨보세요!</div>';
     return;
   }
-
-  document.getElementById('entriesList').innerHTML = data.map(e => entryHTML(e)).join('');
+  document.getElementById('entriesList').innerHTML = entries.map(e => entryHTML(e)).join('');
 }
 
 // ── 카드 HTML ──
@@ -498,7 +457,7 @@ function showToast(msg, isError = false) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-initSupabase();
+loadEntries();
 </script>
 </body>
 </html>
