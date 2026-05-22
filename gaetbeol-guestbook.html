@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>순천만 갯벌 체험 소감문</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --sea-deep: #042C53;
+    --sea-mid: #0C447C;
+    --sea-light: #185FA5;
+    --sea-pale: #E6F1FB;
+    --sea-foam: #B5D4F4;
+    --sand: #FAEEDA;
+    --sand-dark: #BA7517;
+    --mud: #5F5E5A;
+    --mud-light: #D3D1C7;
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --bg: #f0f4f8;
+    --card: #fff;
+    --text: #1a1a2e;
+    --text-muted: #5c6b7a;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* ── 헤더 ── */
+  .header {
+    background: linear-gradient(160deg, var(--sea-deep) 0%, var(--sea-mid) 55%, #1a6fa0 100%);
+    padding: 2.5rem 1.5rem 3.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 30%, rgba(53,130,200,0.25) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 70%, rgba(29,158,117,0.15) 0%, transparent 50%);
+  }
+
+  .wave-top {
+    position: absolute;
+    bottom: -2px; left: 0;
+    width: 100%; height: 60px;
+  }
+
+  .header-inner { position: relative; z-index: 1; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--sea-foam);
+    font-size: 12px; padding: 5px 14px;
+    border-radius: 20px; margin-bottom: 1rem;
+    backdrop-filter: blur(4px);
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #5DCAA5; }
+
+  .header h1 {
+    font-family: 'Gowun Dodum', sans-serif;
+    font-size: clamp(22px, 5vw, 30px);
+    color: #fff; font-weight: 400; line-height: 1.4;
+    margin-bottom: 0.5rem;
+  }
+
+  .header p {
+    color: var(--sea-foam); font-size: 14px; line-height: 1.6;
+  }
+
+  /* ── 컨테이너 ── */
+  .container {
+    max-width: 640px; margin: 0 auto;
+    padding: 0 1rem 3rem;
+    transform: translateY(-24px);
+  }
+
+  /* ── 폼 카드 ── */
+  .form-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.5rem;
+    box-shadow: 0 4px 24px rgba(4,44,83,0.10);
+    margin-bottom: 1.5rem;
+  }
+
+  .form-card-title {
+    font-size: 15px; font-weight: 700;
+    color: var(--sea-deep); margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-card-title::before {
+    content: '✏️'; font-size: 16px;
+  }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  @media(max-width: 420px) { .field-row { grid-template-columns: 1fr; } }
+
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .field:last-of-type { margin-bottom: 0; }
+
+  label {
+    font-size: 12px; font-weight: 700;
+    color: var(--sea-mid); letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  input[type="text"], textarea {
+    border: 1.5px solid var(--mud-light);
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    font-size: 15px; font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text);
+    background: #fafbfc;
+    outline: none;
+    transition: border-color .2s, background .2s;
+    width: 100%;
+  }
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--sea-light);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.10);
+  }
+  textarea { min-height: 110px; resize: vertical; line-height: 1.7; }
+
+  /* 이모지 선택 */
+  .emoji-section { margin-bottom: 14px; }
+  .emoji-label {
+    font-size: 12px; font-weight: 700;
+    color: var(--sea-mid); letter-spacing: 0.03em;
+    text-transform: uppercase; margin-bottom: 8px;
+    display: block;
+  }
+  .emoji-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  }
+  .emoji-btn {
+    border: 1.5px solid var(--mud-light);
+    border-radius: var(--radius-sm);
+    background: #fafbfc;
+    padding: 8px 4px;
+    text-align: center; cursor: pointer;
+    transition: all .15s;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    user-select: none;
+  }
+  .emoji-btn:hover { border-color: var(--sea-foam); background: var(--sea-pale); }
+  .emoji-btn.selected {
+    border-color: var(--sea-light); background: var(--sea-pale);
+    box-shadow: 0 0 0 3px rgba(24,95,165,0.10);
+  }
+  .emoji-icon { font-size: 22px; }
+  .emoji-text { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+
+  /* 제출 버튼 */
+  .submit-btn {
+    width: 100%; margin-top: 18px;
+    background: var(--sea-light);
+    color: #fff; border: none;
+    border-radius: var(--radius-sm);
+    padding: 13px;
+    font-size: 15px; font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .submit-btn:hover { background: var(--sea-mid); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { background: var(--mud-light); cursor: not-allowed; }
+
+  /* 토스트 */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--sea-deep); color: #fff;
+    padding: 12px 24px; border-radius: 30px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transition: transform .35s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--coral); }
+
+  /* ── 방명록 목록 ── */
+  .entries-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: 0 4px 24px rgba(4,44,83,0.08);
+  }
+
+  .entries-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .entries-title {
+    font-size: 15px; font-weight: 700; color: var(--sea-deep);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .entries-title::before { content: '🦀'; font-size: 16px; }
+  .count-badge {
+    background: var(--teal-light); color: var(--teal);
+    font-size: 12px; font-weight: 700;
+    padding: 3px 12px; border-radius: 20px;
+  }
+
+  .loading-msg {
+    text-align: center; padding: 2rem;
+    color: var(--text-muted); font-size: 14px;
+  }
+
+  .empty-msg {
+    text-align: center; padding: 2.5rem 1rem;
+    color: var(--text-muted); font-size: 14px; line-height: 1.8;
+  }
+  .empty-msg .big { font-size: 36px; display: block; margin-bottom: 8px; }
+
+  .entry {
+    padding: 14px 0;
+    border-top: 1px solid #f0f0f0;
+    animation: fadeIn .4s ease;
+  }
+  .entry:first-child { border-top: none; padding-top: 0; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .entry-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 7px;
+  }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .entry-meta { flex: 1; }
+  .entry-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .entry-school { font-size: 12px; color: var(--text-muted); }
+  .entry-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+  .entry-emoji { font-size: 20px; }
+  .entry-time { font-size: 11px; color: var(--mud); }
+  .entry-body { font-size: 14px; line-height: 1.7; color: #3a3a4a; padding-left: 44px; }
+
+  /* ── Supabase 설정 안내 ── */
+  .setup-banner {
+    background: var(--sand); border: 1.5px dashed var(--sand-dark);
+    border-radius: var(--radius-sm); padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem; font-size: 13px; line-height: 1.7;
+    color: #633806;
+  }
+  .setup-banner strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .setup-banner code {
+    background: rgba(0,0,0,0.08); padding: 1px 6px;
+    border-radius: 4px; font-size: 12px; font-family: monospace;
+  }
+  .setup-banner.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- ★★★ 여기에 Supabase 정보를 입력하세요 ★★★ -->
+<script>
+  const SUPABASE_URL = 'URL: https://tvohafktxjgtysztgkmq.supabase.co';       // 예: https://abcdef.supabase.co
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // anon public key
+  const TABLE_NAME = 'gaetbeol_entries';
+</script>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="badge"><span class="badge-dot"></span> 2025 순천만 갯벌 체험</div>
+    <h1>오늘 갯벌에서<br>무엇을 느꼈나요?</h1>
+    <p>영상을 보고 난 후의 느낌을 자유롭게 남겨주세요 🌊</p>
+  </div>
+  <svg class="wave-top" viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 30 Q180 0 360 30 Q540 60 720 30 Q900 0 1080 30 Q1260 60 1440 30 L1440 60 L0 60Z" fill="#f0f4f8"/>
+  </svg>
+</header>
+
+<div class="container">
+
+  <!-- Supabase 미설정 안내 -->
+  <div class="setup-banner" id="setupBanner">
+    <strong>⚙️ Supabase 연결이 필요해요</strong>
+    1. <a href="https://supabase.com" target="_blank">supabase.com</a>에서 프로젝트 생성<br>
+    2. SQL 에디터에서 아래 쿼리 실행:<br>
+    <code>CREATE TABLE gaetbeol_entries (id bigserial PRIMARY KEY, name text, school text, feeling text, content text, created_at timestamptz DEFAULT now());</code><br>
+    3. 이 파일 상단 <code>SUPABASE_URL</code>과 <code>SUPABASE_ANON_KEY</code>를 채우세요.
+  </div>
+
+  <!-- 소감문 작성 폼 -->
+  <div class="form-card">
+    <div class="form-card-title">소감문 남기기</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>이름</label>
+        <input type="text" id="nameInput" placeholder="홍길동" maxlength="10">
+      </div>
+      <div class="field">
+        <label>학교 / 학년</label>
+        <input type="text" id="schoolInput" placeholder="○○초 3학년" maxlength="20">
+      </div>
+    </div>
+
+    <div class="emoji-section">
+      <span class="emoji-label">오늘 기분은?</span>
+      <div class="emoji-grid" id="emojiGrid">
+        <div class="emoji-btn selected" data-val="😄"><span class="emoji-icon">😄</span><span class="emoji-text">최고</span></div>
+        <div class="emoji-btn" data-val="🙂"><span class="emoji-icon">🙂</span><span class="emoji-text">좋아요</span></div>
+        <div class="emoji-btn" data-val="🤔"><span class="emoji-icon">🤔</span><span class="emoji-text">신기해</span></div>
+        <div class="emoji-btn" data-val="😲"><span class="emoji-icon">😲</span><span class="emoji-text">놀라워</span></div>
+        <div class="emoji-btn" data-val="😅"><span class="emoji-icon">😅</span><span class="emoji-text">힘들어</span></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>소감문</label>
+      <textarea id="contentInput" placeholder="갯벌에서 느낀 점을 자유롭게 써보세요! (최소 10자 이상)" maxlength="500"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitEntry()">
+      🌊 소감문 등록하기
+    </button>
+  </div>
+
+  <!-- 방명록 목록 -->
+  <div class="entries-card">
+    <div class="entries-header">
+      <span class="entries-title">친구들의 소감</span>
+      <span class="count-badge" id="countBadge">불러오는 중…</span>
+    </div>
+    <div id="entriesList"><div class="loading-msg">🌊 불러오는 중…</div></div>
+  </div>
+</div>
+
+<!-- 토스트 알림 -->
+<div class="toast" id="toast"></div>
+
+<script>
+const { createClient } = supabase;
+let db = null;
+let selectedEmoji = '😄';
+
+// ── Supabase 초기화 ──
+function initSupabase() {
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+    document.getElementById('setupBanner').classList.remove('hidden');
+    document.getElementById('entriesList').innerHTML =
+      '<div class="empty-msg"><span class="big">⚙️</span>Supabase 연결 후 소감문이 표시돼요</div>';
+    document.getElementById('countBadge').textContent = '0명';
+    return;
+  }
+  document.getElementById('setupBanner').classList.add('hidden');
+  db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  loadEntries();
+}
+
+// ── 이모지 선택 ──
+document.getElementById('emojiGrid').addEventListener('click', e => {
+  const btn = e.target.closest('.emoji-btn');
+  if (!btn) return;
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedEmoji = btn.dataset.val;
+});
+
+// ── 소감문 등록 ──
+async function submitEntry() {
+  if (!db) { showToast('Supabase 연결을 먼저 설정해주세요', true); return; }
+
+  const name = document.getElementById('nameInput').value.trim();
+  const school = document.getElementById('schoolInput').value.trim();
+  const content = document.getElementById('contentInput').value.trim();
+
+  if (!name) { showToast('이름을 입력해주세요 😊', true); return; }
+  if (!content || content.length < 10) { showToast('소감문을 10자 이상 써주세요 ✍️', true); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '등록 중…';
+
+  const { error } = await db.from(TABLE_NAME).insert({
+    name,
+    school: school || '미입력',
+    feeling: selectedEmoji,
+    content
+  });
+
+  if (error) {
+    showToast('저장 중 오류가 발생했어요 😢', true);
+    console.error(error);
+  } else {
+    showToast('소감문이 등록됐어요! 🎉');
+    document.getElementById('nameInput').value = '';
+    document.getElementById('schoolInput').value = '';
+    document.getElementById('contentInput').value = '';
+    loadEntries();
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '🌊 소감문 등록하기';
+}
+
+// ── 목록 불러오기 ──
+async function loadEntries() {
+  if (!db) return;
+  const { data, error } = await db
+    .from(TABLE_NAME)
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) {
+    document.getElementById('entriesList').innerHTML =
+      '<div class="empty-msg">불러오기 실패 😢</div>';
+    return;
+  }
+
+  document.getElementById('countBadge').textContent = `${data.length}명 참여`;
+
+  if (data.length === 0) {
+    document.getElementById('entriesList').innerHTML =
+      '<div class="empty-msg"><span class="big">🌊</span>아직 소감문이 없어요.<br>첫 번째로 남겨보세요!</div>';
+    return;
+  }
+
+  document.getElementById('entriesList').innerHTML = data.map(e => entryHTML(e)).join('');
+}
+
+// ── 카드 HTML ──
+const colors = [
+  ['#E6F1FB','#185FA5'], ['#E1F5EE','#0F6E56'], ['#FBEAF0','#993556'],
+  ['#FAEEDA','#BA7517'], ['#FAECE7','#993C1D']
+];
+function entryHTML(e) {
+  const idx = Math.abs(hashStr(e.name)) % colors.length;
+  const [bg, fg] = colors[idx];
+  const initial = (e.name || '?')[0];
+  const time = timeAgo(e.created_at);
+  return `
+  <div class="entry">
+    <div class="entry-head">
+      <div class="avatar" style="background:${bg}; color:${fg}">${initial}</div>
+      <div class="entry-meta">
+        <div class="entry-name">${escHtml(e.name)}</div>
+        <div class="entry-school">${escHtml(e.school)}</div>
+      </div>
+      <div class="entry-right">
+        <span class="entry-emoji">${e.feeling || '🙂'}</span>
+        <span class="entry-time">${time}</span>
+      </div>
+    </div>
+    <div class="entry-body">${escHtml(e.content)}</div>
+  </div>`;
+}
+
+// ── 유틸 ──
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+  return h;
+}
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function timeAgo(iso) {
+  const diff = (Date.now() - new Date(iso)) / 1000;
+  if (diff < 60) return '방금 전';
+  if (diff < 3600) return `${Math.floor(diff/60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}시간 전`;
+  return `${Math.floor(diff/86400)}일 전`;
+}
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+initSupabase();
+</script>
+</body>
+</html>
